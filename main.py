@@ -9,6 +9,15 @@ from dotenv import load_dotenv
 import tempfile
 import os
 from streamlit_extras.buy_me_a_coffee import button
+from langchain.callbacks.base import BaseCallbackHandler
+
+class StreamHandler(BaseCallbackHandler):
+    def __init__(self, container, initial_text=''):
+        self.container = container
+        self.text = initial_text
+    def on_llm_new_token(self, token: str, **kwargs) -> None:
+        self.text += token
+        self.container.markdown(self.text)
 
 button(username='gilbut76', floating=True, width=221)
 
@@ -61,7 +70,8 @@ if uploaded_file is not None:
 
     if st.button('질문하기'):
         with st.spinner('Wait for it...'):
-            llm = ChatOpenAI(model_name='gpt-3.5-turbo', temperature=0)
+            chat_box = st.empty()
+            stream_handler = StreamHandler(chat_box)
+            llm = ChatOpenAI(model_name='gpt-3.5-turbo', temperature=0, streaming=True, callbacks=[stream_handler])
             qa_chain = RetrievalQA.from_chain_type(llm, retriever=db.as_retriever())
-            result = qa_chain({'query':question})
-            st.write(result['result'])
+            qa_chain({'query':question})
