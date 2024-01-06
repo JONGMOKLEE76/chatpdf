@@ -8,6 +8,10 @@ import streamlit as st
 from dotenv import load_dotenv
 import tempfile
 import os
+from streamlit_extras.buy_me_a_coffee import button
+
+button(username='gilbut76', floating=True, width=221)
+
 __import__('pysqlite3')
 import sys
 sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
